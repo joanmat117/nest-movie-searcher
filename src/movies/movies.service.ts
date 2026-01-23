@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { MovieParamsDto } from "./dto/MovieParamsDto";
 
 const OMDB_APIKEY = 'a8ed639c'
 
@@ -7,12 +8,24 @@ export class MoviesService {
 
   private readonly ENDPOINT_URL = `https://www.omdbapi.com/?apikey=${OMDB_APIKEY}`    
 
-  async getMovieByImdbId(id:string){
-    
+  private async getMovieUrlSearchParams(filters:MovieParamsDto){
+    const params = new URLSearchParams()
+
+    if(filters.type) params.set('type',filters.type)
+    if(filters.plot) params.set('plot',filters.plot)
+    if(filters.year) params.set('y',filters.year.toString())
+    if(filters.return) params.set('r',filters.return)
+
+    return params.toString()
+  }
+
+  async getMovieByImdbId(id:string,filters:MovieParamsDto){
     try {
-    console.log('Id: ',id)
-    const fetchUrl = `${this.ENDPOINT_URL}&i=${encodeURIComponent(id)}`
-    console.log('Fetch to: ',fetchUrl)
+
+    const params = await this.getMovieUrlSearchParams(filters)
+
+    const fetchUrl = `${this.ENDPOINT_URL}&i=${encodeURIComponent(id)}&${params}`
+
     const res = await fetch(fetchUrl)
 
     if(!res.ok){
@@ -28,11 +41,12 @@ export class MoviesService {
   }
 
 
-  async getMovieByTitle(title:string){
-    
+  async getMovieByTitle(title:string,filters:MovieParamsDto){
     try {
-    console.log('Title: ',title)
-    const res = await fetch(`${this.ENDPOINT_URL}&t=${encodeURIComponent(title)}`)
+
+    const params = await this.getMovieUrlSearchParams(filters)
+
+    const res = await fetch(`${this.ENDPOINT_URL}&t=${encodeURIComponent(title)}&${params}`)
 
     if(!res.ok){
       return new InternalServerErrorException()
