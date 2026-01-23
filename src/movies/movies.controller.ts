@@ -1,6 +1,8 @@
-import { Controller, Get, Param } from "@nestjs/common";
+import { Controller, Get, Param, UsePipes } from "@nestjs/common";
 import { MoviesService } from "./movies.service";
+import { imdbIdPipe } from "src/common/pipes/ImdbIdPipe";
 
+@UsePipes(imdbIdPipe)
 @Controller('/movies')
 export class MovieController {
 
@@ -14,8 +16,8 @@ export class MovieController {
     return movie
   }
 
-  @Get('/id/:id')
-  async getMovieByImdbId(@Param('id') id:string){
+  @Get('/id/:imdbId')
+  async getMovieByImdbId(@Param('imdbId') id:string){
 
     const movie = await this.movieService.getMovieByImdbId(id)
 
